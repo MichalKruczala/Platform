@@ -1,7 +1,14 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from './generated/prisma/client';
+import { PrismaPg } from '@prisma/adapter-pg';
 
-// Tworzymy klienta bazy danych
-const prisma = new PrismaClient();
+// Pobieramy bezpiecznie link do bazy z pliku .env (lub z ustawień Rendera)
+const connectionString = process.env.DATABASE_URL!;
+
+// Prisma 7 wymaga utworzenia adaptera z linkiem do bazy
+const adapter = new PrismaPg({ connectionString });
+
+// Tworzymy klienta bazy danych, wstrzykując do niego adapter
+const prisma = new PrismaClient({ adapter });
 
 const server = Bun.serve({
   port: 3000,
