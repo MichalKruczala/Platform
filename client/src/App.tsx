@@ -3,14 +3,14 @@ import { useEffect, useState } from 'react';
 function App() {
   // Stan dla danych z serwera
   const [serverMessage, setServerMessage] = useState<string>("Ładowanie danych z serwera...");
-  
+
   // Nowe stany dla formularza
   const [inputText, setInputText] = useState<string>(""); // Przechowuje wpisywany tekst
   const [serverResponse, setServerResponse] = useState<string>(""); // Przechowuje odpowiedź po wysłaniu
 
   // Pobieranie początkowej wiadomości (GET)
   useEffect(() => {
-    fetch('http://localhost:3000')
+    fetch('https://bun-backend-e2f2.onrender.com')
       .then((response) => response.json())
       .then((data) => setServerMessage(data.message))
       .catch(() => setServerMessage("Błąd połączenia z serwerem 😢"));
@@ -21,7 +21,7 @@ function App() {
     if (!inputText) return; // Nie wysyłaj, jeśli pole jest puste
 
     try {
-      const response = await fetch('http://localhost:3000/api/wiadomosc', {
+      const response = await fetch('https://bun-backend-e2f2.onrender.com/api/wiadomosc', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -42,7 +42,7 @@ function App() {
   return (
     <div style={{ textAlign: 'center', padding: '50px', fontFamily: 'sans-serif' }}>
       <h1>Mój Fullstackowy Projekt 🚀</h1>
-      
+
       {/* Sekcja GET */}
       <div style={{ margin: '20px auto', padding: '20px', border: '1px solid #ccc', borderRadius: '8px', maxWidth: '400px' }}>
         <h3>Wiadomość z backendu (GET):</h3>
@@ -52,14 +52,14 @@ function App() {
       {/* Sekcja POST */}
       <div style={{ margin: '20px auto', padding: '20px', border: '1px solid #ccc', borderRadius: '8px', maxWidth: '400px', backgroundColor: '#f9f9f9' }}>
         <h3>Wyślij coś do serwera (POST):</h3>
-        <input 
-          type="text" 
+        <input
+          type="text"
           value={inputText}
           onChange={(e) => setInputText(e.target.value)} // Aktualizuje stan przy każdym naciśnięciu klawisza
           placeholder="Wpisz cokolwiek..."
           style={{ padding: '10px', width: '70%', borderRadius: '4px', border: '1px solid #ccc' }}
         />
-        <button 
+        <button
           onClick={handleSendData}
           style={{ padding: '10px 15px', marginLeft: '10px', cursor: 'pointer', backgroundColor: '#28a745', color: 'white', border: 'none', borderRadius: '4px' }}
         >
