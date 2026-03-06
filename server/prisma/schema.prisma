@@ -12,8 +12,95 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
-model Message {
-  id        Int      @id @default(autoincrement()) 
-  text      String  
-  createdAt DateTime @default(now()) 
+// To jest główny model Twojej bazy danych. Możesz usunąć stary model Message, jeśli chcesz, i wkleić to:
+
+model User {
+  id               Int            @id @default(autoincrement())
+  email            String         @unique
+  phone            String?
+  name             String
+  password         String
+
+  // Relacje jako NAUCZYCIEL (tworzy warsztaty i ma grafik)
+  lessonsTaught    Lesson[]       @relation("InstructorLessons")
+  availabilities   Availability[] @relation("InstructorSchedule")
+  reviewsReceived  Review[]       @relation("ReviewsReceived") // Opinie, które ktoś mu wystawił
+
+  // Relacje jako UCZEŃ (zapisuje się na lekcje i wystawia opinie)
+  bookings         Booking[]      @relation("StudentBookings")
+  reviewsGiven     Review[]       @relation("ReviewsGiven")    // Opinie, które on wystawił innym
+
+  createdAt        DateTime       @default(now())
+}
+
+model Lesson {
+  id               Int       @id @default(autoincrement())
+  title            String    // np. "Lekcja gry na gitarze", "Warsztat z garncarstwa"
+  description      String?
+  price            Float     // Cena (Float, bo mogą być grosze)
+  
+  // Lokalizacja GPS i adres
+  lat              Float?    
+  lng              Float?    
+  address          String?   // Tekstowy adres, np. "ul. Szkolna 4, Katowice"
+  
+  // Czy to lekcja 1na1 czy warsztat grupowy?
+  maxAttendees     Int       @default(1) 
+
+  // Kto jest nauczycielem/organizatorem? (Relacja Many-To-One)
+  instructorId     Int
+  instructor       User      @relation("InstructorLessons", fields: [instructorId], references: [id])
+
+  // Lista zapisów na tę konkretną lekcję/warsztat
+  bookings         Booking[]
+
+  createdAt        DateTime  @default(now())
+}
+
+model Availability {
+  id               Int       @id @default(autoincrement())
+  startTime        DateTime  // Początek okienka (np. 14:00)
+  endTime          DateTime  // Koniec okienka (np. 15:00)
+
+  // Do jakiego nauczyciela należy to okienko w grafiku?
+  instructorId     Int
+  instructor       User      @relation("InstructorSchedule", fields: [instructorId], references: [id])
+
+  // Powiązanie z rezerwacjami (jeśli ktoś się zapisze, to okienko zostanie "zajęte")
+  bookings         Booking[]
+}
+
+model Booking {
+  id               Int          @id @default(autoincrement())
+  status           String       @default("CONFIRMED") // np. CONFIRMED, CANCELLED, COMPLETED
+
+  // Kto się zapisał? (Uczeń)
+  studentId        Int
+  student          User         @relation("StudentBookings", fields: [studentId], references: [id])
+
+  // Na jaką lekcję/warsztat?
+  lessonId         Int
+  lesson           Lesson       @relation(fields: [lessonId], references: [id])
+
+  // W jakim okienku czasowym z grafiku?
+  availabilityId   Int
+  availability     Availability @relation(fields: [availabilityId], references: [id])
+
+  createdAt        DateTime     @default(now())
+}
+
+model Review {
+  id               Int      @id @default(autoincrement())
+  rating           Int      // Ocena (np. od 1 do 5)
+  comment          String?  // Treść komentarza (opcjonalnie)
+
+  // Kto ocenia? (Uczeń)
+  reviewerId       Int
+  reviewer         User     @relation("ReviewsGiven", fields: [reviewerId], references: [id])
+
+  // Kto jest oceniany? (Nauczyciel)
+  instructorId     Int
+  instructor       User     @relation("ReviewsReceived", fields: [instructorId], references: [id])
+
+  createdAt        DateTime @default(now())
 }
