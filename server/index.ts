@@ -37,6 +37,7 @@ const server = Bun.serve({
         // Sprawdzamy, czy użytkownik już istnieje
         const istniejacyUser = await prisma.user.findUnique({ where: { email } });
         if (istniejacyUser) {
+          console.log('pojebalo cieeeee?');
           return new Response(JSON.stringify({ error: "Taki email jest już w bazie!" }), { 
             status: 400, headers: { ...headers, "Content-Type": "application/json" } 
           });
